@@ -150,7 +150,7 @@ MuseScore {
                         chord = harmony.parent.elementAt(0);
                         duration = chord.duration;
                         head = chord.notes[0].headType; //todo fix: how to get "effective" note head type when "HEAD_AUTO" is used in source chord?
-                        text = harmony.text; // todo fix: where to find chord text if MuseScore did not recognize the Harmony name?
+                        text = harmony.text; // todo fix: where to find chord text if MuseScore did not parse/recognize the Harmony name?
                         console.log("got harmony ",text," at time ", time," with root: ",harmony.rootTpc," bass: ",harmony.baseTpc);
                         //if (head==255) console.log("!  harmony length could not be found, kindly file bug report to help");
                         
@@ -178,7 +178,7 @@ MuseScore {
                                     }                                    
                               }     
                               else console.log("!  semitones not found for chord ",text,", please file a bug report to help manage more chords suffix");
-                        } else console.log("!  MuseScore seems to not know that chord notation, please rewrite in a known form");
+                        } else console.log("!  MuseScore has not parsed/recognized the chord notation, please click once on it to force MS to parse it, and rewrite if needed");
 
                         //add full chord
                         tempChord.duration = duration;  //play duration                      
