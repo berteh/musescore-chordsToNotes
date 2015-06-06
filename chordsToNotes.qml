@@ -1,12 +1,15 @@
 //=============================================================================
 //  MuseScore - Chords to Staff notation plugin
 //
-//  Copyright (C) 2015 Berteh - https://github.com/berteh/
+//  Copyright (C) 2015 Berteh - https://github.com/berteh/musescore-chordsToNotes/
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License version 2
 //  as published by the Free Software Foundation and appearing in
 //  the file LICENCE.GPL
+//
+//  documentation: https://github.com/berteh/musescore-chordsToNotes/
+//  support: https://github.com/berteh/musescore-chordsToNotes/issues
 //=============================================================================
 
 import QtQuick 2.0
@@ -15,7 +18,7 @@ import MuseScore 1.0
 MuseScore {
       version:  "0.1"
       description: "This plugin expands chords into a few notes in an additional staff, directly playable by MuseScore. No styles, variations, bells or whistles: it's really plain."    
-      menuPath: "Plugins.ChordsToNotes"
+      menuPath: "Plugins.Create_Notes_From_Chords"
 
       /** return harmony of segment, if any, null if none */
       function getSegmentHarmony(segment) {
@@ -51,6 +54,17 @@ MuseScore {
             else alt = "##";
 
             return [cls, midi, letter, alt];
+      }
+
+      /** create and return a new Note element with given (midi) pitch, tpc1, tpc2 and headtype */
+      function createNote(pitch, tpc1, tpc2, head){
+          var note = newElement(Element.NOTE);
+          note.pitch = pitch;
+          note.tpc1 = tpc1;
+          note.tpc2 = tpc2;
+          if (head) note.headType = head; 
+          else note.headType = NoteHead.HEAD_AUTO;
+          return note;
       }
 
       /** first call must be case sensitive to have "m" as minor */  //todo handle bass from chord/bass notation
@@ -92,7 +106,7 @@ MuseScore {
             [ ["add9", "(add9)"], [0, 4, 7, 14], "Major (Add Ninth)" ],
             [ ["madd9", "m(add9)"], [0, 3, 7, 14], "Minor (Add Ninth)"],
             [ ["sus2"], [0, 2, 7], "Suspended Second" ],
-            [ ["5"], [0, 7], "Power Chord" ]
+            [ ["5"], [0, 7], "Power Chor,semitonesd" ]
           ];
 
 
@@ -104,7 +118,7 @@ MuseScore {
                       return chords[i][1]; 
                   }
                 }
-              }
+            }
             if (!case_insensitive) {
                 return chordSuffixToSemitoneNumbers(str, true);
               } else {
@@ -117,56 +131,61 @@ MuseScore {
 
       onRun: {
             if (typeof curScore === 'undefined') {
-                  console.log("Generating no Staff from Chords. Please open a score before calling execution this function.");
+                  console.log("Generating no Notes from Chords. Please open a score before calling execution this function.");
                   Qt.quit();
             }     
             
-            console.log("Generating Staff from Chords");
-            //console.log("testing tpcToMIDI: 14->48?"+tpcToMIDI(14)[1]+" 29->57?"+tpcToMIDI(29)[1]+" -1->51?"+tpcToMIDI(-1)[1]);
+            console.log("Generating Notes from Chords");
 
             var cursor = curScore.newCursor();
-            cursor.rewind(0); // beginning of score
+            cursor.rewind(0); // to beginning of score
             
-            var segment, harmony, time, duration, text, info, cls, pitch, letter, alt, suffix, semitones;
+            var voice=3; var old_voice=0;
+            var segment, harmony, chord, time, tpc, duration, head, text, info, cls, pitch, letter, alt, suffix, semitones;
 
             while (segment = cursor.segment) {                                     
-//                  console.log("got segment is of type ",segment.segmentType);
                   harmony = getSegmentHarmony(segment);
                   if (harmony) {
                         time = cursor.tick;
-                        duration = harmony.parent.elementAt(0).duration;
-                        text = harmony.text;
+                        chord = harmony.parent.elementAt(0);
+                        duration = chord.duration;
+                        head = chord.notes[0].headType; //todo fix: how to get "effective" note head type when "HEAD_AUTO" is used in source chord?
+                        text = harmony.text; // todo fix: where to find chord text if MuseScore did not recognize the Harmony name?
                         console.log("got harmony ",text," at time ", time," with root: ",harmony.rootTpc," bass: ",harmony.baseTpc);
+                        //if (head==255) console.log("!  harmony length could not be found, kindly file bug report to help");
                         
-                        //create new Chord in same segment, voice 4 //todo create in new staff
+                        //create new Chord in same segment //todo create in new staff
                         var tempChord = newElement(Element.CHORD);
-                        var tempNote = newElement(Element.NOTE);
 
                         //create root note
-                        info = tpcToMIDI(harmony.rootTpc);
+                        tpc = harmony.rootTpc;
+                        info = tpcToMIDI(tpc);
                         cls = info[0]; pitch = info[1]; letter = info[2]; alt = info[3];
-                        tempNote.pitch=pitch; //music played is ok, but note is strangely always displayed as Bbb, todo fix.
-                        tempNote.setTpc=harmony.rootTpc; //seems to have no effect, how to fix note position?
-                        tempChord.add(tempNote);                  
-                        console.log("  added note with infos: ",cls, pitch, letter, alt);
+
+                        tempChord.add( createNote(pitch, tpc, tpc, head ));
+                        console.log("  added note ",letter," at ",pitch);
 
                         //add other notes
                         if(text) {
                               suffix = text.substring(alt.length+1);
                               semitones = chordSuffixToSemitoneNumbers(suffix, false);
                               if (semitones) {
-                                    console.log("  will add semitones: ",semitones);
-                                    //todo add notes for all semitones
+                                    var semiTpc = 0;
+                                    for (var s = 1; s < semitones.length; ++s) {//skip semitone[0], root is already added
+//                                          console.log("  adding semitone: ",semitones[s]);  
+                                          semiTpc = tpc+semitones[s];
+                                          tempChord.add( createNote(pitch+semitones[s], semiTpc, semiTpc, head ));                             
+                                    }                                    
                               }     
-                              else console.log("  semitones not found for that chord, please file a bug report to help on chord suffix: ",semitones);
-                        } else console.log("  MuseScore seems to not know that chord notation, please rewrite in a known form");
+                              else console.log("!  semitones not found for chord ",text,", please file a bug report to help manage more chords suffix");
+                        } else console.log("!  MuseScore seems to not know that chord notation, please rewrite in a known form");
 
                         //add full chord
-                        tempChord.duration = duration;
+                        tempChord.duration = duration;  //play duration                      
                         tempChord.visible = true;
-                        cursor.voice = 3;
+                        cursor.voice = voice;
                         cursor.add(tempChord);
-                        cursor.voice = 0;                      
+                        cursor.voice = old_voice;                      
                   }
                   cursor.next();
             }
