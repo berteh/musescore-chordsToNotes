@@ -16,11 +16,11 @@ import QtQuick 2.0
 import MuseScore 1.0
 
 MuseScore {
-      version:  "0.1"
+      version:  "0.2"
       description: "This plugin expands chords into a few notes in an additional staff, directly playable by MuseScore. No styles, variations, bells or whistles: it's really plain."    
-      menuPath: "Plugins.Create_Notes_From_Chords"
+      menuPath: "Plugins.Create-Notes-From-Chords"
 
-      /** return harmony of segment, if any, null if none */
+      /** return harmony of segment if any, null if none */
       function getSegmentHarmony(segment) {
             if (segment.segmentType != Segment.ChordRest) 
                   return null;
@@ -43,8 +43,8 @@ MuseScore {
             var classes = [3,10,5,0,7,2,9,4,11,6,1,8];
             var letters = ['F','C','G','D','A','E','B'];
 
-            var cls = classes[(tpc+1)%12];
-            var midi = ((cls*7)%12) + referenceC; 
+            var cls = classes[((tpc-2+12)%12)+3]; //tpc to class
+            var midi = (( ((tpc-2+12)%12) *7)%12) + referenceC;   //tpc to midi number
             var letter = letters[(tpc+1)%7];
             var alt = "";
             if (tpc<6) alt = "bb";
@@ -64,13 +64,15 @@ MuseScore {
           note.tpc2 = tpc2;
           if (head) note.headType = head; 
           else note.headType = NoteHead.HEAD_AUTO;
+          //console.log("  created note with tpc: ",tpc1," ",tpc2," pitch: ",pitch);
           return note;
       }
 
-      /** first call must be case sensitive to have "m" as minor */  //todo handle bass from chord/bass notation
+      /** returns the list of semitones that compose the chord variant "str".
+        must first be called case sensitive to have "m" handled as minor */  
       function chordSuffixToSemitoneNumbers(str, case_insensitive) { //adapted from Scott Davies music.js, would prefer to use parsing mechanism of MuseScore but it seems not accessible from QML API
           var chords = [
-            [ ["", "M", "maj", "major"], [0, 4, 7], "Major" ], //todo check if "" works for major.
+            [ ["", "M", "maj", "major"], [0, 4, 7], "Major" ],
             [ ["m", "min", "minor"], [0, 3, 7], "Minor" ],
             [ ["7"], [0, 4, 7, 10], "Dominant Seventh" ],
             [ ["min7", "m7", "minor7"], [0, 3, 7, 10], "Minor Seventh"],
@@ -106,7 +108,7 @@ MuseScore {
             [ ["add9", "(add9)"], [0, 4, 7, 14], "Major (Add Ninth)" ],
             [ ["madd9", "m(add9)"], [0, 3, 7, 14], "Minor (Add Ninth)"],
             [ ["sus2"], [0, 2, 7], "Suspended Second" ],
-            [ ["5"], [0, 7], "Power Chor,semitonesd" ]
+            [ ["5"], [0, 7], "Power Chord" ]
           ];
 
 
@@ -126,7 +128,38 @@ MuseScore {
             }
       }
 
+      /** returns tpc of note that is #semitone half-tones higher than rootTPC
+            eg: semitoneToTPC (tpc of C#, 4) = tpc of E# */
+      function semitoneToTPC(rootTpc, semitone){
+            var semiToTpcDiff = [0, 7, 2, -3, 4, -1, -6, 1, 8, 3, -2, 5];
+            return (rootTpc + semiToTpcDiff[semitone%12]);
+      }
 
+      /** touch/dirty all chords & redo layout to make sure they are all parsed.
+          TODO find a way to implement, so far nothing below seems to work */
+      function touchChords(){
+            console.log("redoing layout of score to parse chords.");
+            curScore.doReLayout; //no effect
+
+            var cursor = curScore.newCursor();
+            cursor.rewind(0);
+            var segment, harmony, chord;
+
+            while (segment = cursor.segment) {                                     
+                  harmony = getSegmentHarmony(segment);
+                  if (harmony) {
+                        harmony.dirty = true;
+                        harmony.setDirty;
+                        curScore.setPlaylistDirty;
+                        curScore.doLayout();
+
+                        segment.setDirty;
+                        curScore.doLayout();
+                  }
+
+                  cursor.next();
+            }
+      }
 
 
       onRun: {
@@ -137,8 +170,11 @@ MuseScore {
             
             console.log("Generating Notes from Chords");
 
+            //todo: layout all chords, to make sure they are parsed. https://musescore.org/en/node/64031#comment-292216            
+            //touchChords(); //todo fix: does not work, how to parse all chords?
+
             var cursor = curScore.newCursor();
-            cursor.rewind(0); // to beginning of score
+            cursor.rewind(0); // beginning of score
             
             var voice=3; var old_voice=0;
             var segment, harmony, chord, time, tpc, duration, head, text, info, cls, pitch, letter, alt, suffix, semitones;
@@ -146,10 +182,12 @@ MuseScore {
             while (segment = cursor.segment) {                                     
                   harmony = getSegmentHarmony(segment);
                   if (harmony) {
+           
                         time = cursor.tick;
                         chord = harmony.parent.elementAt(0);
                         duration = chord.duration;
-                        head = chord.notes[0].headType; //todo fix: how to get "effective" note head type when "HEAD_AUTO" is used in source chord?
+                        if (cursor.isChord ) head = chord.notes[0].headType; //todo fix: how to get "effective" note head type when "HEAD_AUTO" is used in source chord?
+                        else if (cursor.isRest ) head = NoteHead.HEAD_AUTO; //todo fix: how to get rest length and convert to note head type?
                         text = harmony.text; // todo fix: where to find chord text if MuseScore did not parse/recognize the Harmony name?
                         console.log("got harmony ",text," at time ", time," with root: ",harmony.rootTpc," bass: ",harmony.baseTpc);
                         //if (head==255) console.log("!  harmony length could not be found, kindly file bug report to help");
@@ -157,27 +195,34 @@ MuseScore {
                         //create new Chord in same segment //todo create in new staff
                         var tempChord = newElement(Element.CHORD);
 
-                        //create root note
+                        //add explicit bass note if any
+                        if (harmony.baseTpc > -2){
+                              info = tpcToMIDI(harmony.baseTpc);
+                              pitch = info[1];
+                              tempChord.add( createNote(pitch, harmony.baseTpc, harmony.baseTpc, head ));
+                        }
+
+                        //add root note
                         tpc = harmony.rootTpc;
                         info = tpcToMIDI(tpc);
                         cls = info[0]; pitch = info[1]; letter = info[2]; alt = info[3];
+                        tempChord.add( createNote(pitch, tpc, tpc, head ));                        
 
-                        tempChord.add( createNote(pitch, tpc, tpc, head ));
-                        console.log("  added note ",letter," at ",pitch);
-
-                        //add other notes
+                        //add other notes //todo how to use MuseScore parsing features to get list of degrees/semitones directly?
                         if(text) {
-                              suffix = text.substring(alt.length+1);
+                              suffix = text.substring(alt.length+1);//get rid of Root (&opt. alteration)
+                              suffix = suffix.replace(/^(.*?)(\/[A-G][b#]*)$/, "$1");//get rid of Bass if any
+                              
                               semitones = chordSuffixToSemitoneNumbers(suffix, false);
                               if (semitones) {
                                     var semiTpc = 0;
                                     for (var s = 1; s < semitones.length; ++s) {//skip semitone[0], root is already added
 //                                          console.log("  adding semitone: ",semitones[s]);  
-                                          semiTpc = tpc+semitones[s];
+                                          semiTpc = semitoneToTPC(tpc, semitones[s]);
                                           tempChord.add( createNote(pitch+semitones[s], semiTpc, semiTpc, head ));                             
                                     }                                    
                               }     
-                              else console.log("!  semitones not found for chord ",text,", please file a bug report to help manage more chords suffix");
+                              else console.log("!  semitones not found for chord ",text," with suffix: ",suffix,", please file a bug report to help manage more chords suffix");
                         } else console.log("!  MuseScore has not parsed/recognized the chord notation, please click once on it to force MS to parse it, and rewrite if needed");
 
                         //add full chord
