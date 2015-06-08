@@ -10,7 +10,7 @@ No styles, variations, bells or whistles: it's really plain, but does work.
 - enable the chordsToNotes plugin in ``plugins > plugin manager`` dialog, restart MuseScore.
 - open a score with chords, double-click on each chord to make sure MuseScore has parsed them
 - run the plugin via ``plugin > Create-Notes-From-Chords``
-- enjoy your new voice 4 with notes generated from the chords.
+- enjoy your new voice 4 with notes generated from the chords, and use [MuseScore shortcuts](see https://musescore.org/en/handbook/note-input) to quickly change the proposed chords to you liking (eg ctrl up/down to move a note up/down one octave)
 
 ## Issues and limitations
 
