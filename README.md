@@ -4,6 +4,8 @@ This plugin for [MuseScore 2.0](http://musescore.org/) expands chords annotation
 
 No styles, variations, bells or whistles: it's really plain, but does work.
 
+This plugin is likely to be ported into MuseScore core in the near future... no further plugin development for now.
+
 ## How-To
 
 - [Download](https://github.com/berteh/musescore-chordsToNotes/archive/master.zip) and [install the plugin](https://musescore.org/en/handbook/plugins-0#installation) to your MuseScore 2.0+ install. Only the [qml file]([https://github.com/berteh/musescore-chordsToNotes/raw/master/chordsToNotes.qml) is needed, but the examples (in [test/](https://github.com/berteh/musescore-chordsToNotes/tree/master/test)) are useful to try it out quickly.
