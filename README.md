@@ -10,13 +10,12 @@ This plugin is likely to be ported into MuseScore core in the near future... no 
 
 - [Download](https://github.com/berteh/musescore-chordsToNotes/archive/master.zip) and [install the plugin](https://musescore.org/en/handbook/plugins-0#installation) to your MuseScore 2.0+ install. Only the [qml file]([https://github.com/berteh/musescore-chordsToNotes/raw/master/chordsToNotes.qml) is needed, but the examples (in [test/](https://github.com/berteh/musescore-chordsToNotes/tree/master/test)) are useful to try it out quickly.
 - enable the chordsToNotes plugin in ``plugins > plugin manager`` dialog, restart MuseScore.
-- open a score with chords, double-click on each chord to make sure MuseScore has parsed them
+- open a score with chords, make sure MuseScore has parsed them all by hitting F2 (transpose to anything) and SHIFT-F2 (to transpose back)... or simply transpose to a prime (or just to the current key) - so nothing is really changed
 - run the plugin via ``plugin > Create-Notes-From-Chords``
 - enjoy your new voice 4 with notes generated from the chords, and use [MuseScore shortcuts](see https://musescore.org/en/handbook/note-input) to quickly change the proposed chords to you liking (eg ctrl up/down to move a note up/down one octave)
 
 ## Issues and limitations
 
-- the need to double-click on each chord before running the plugin is a major annoyance. Any help to make MuseScore parse all chords automatically is welcome!
 - I would like to generate these new notes in a new staff instead of new voice in current staff. Any suggestion how to do so is welcome.
 - I would like to display notes with the proper length (eg whole, half,...). Any suggestion to get note length info from cursor chord/rest is welcome.
 
