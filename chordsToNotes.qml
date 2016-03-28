@@ -75,7 +75,7 @@ MuseScore {
             [ ["", "M", "maj", "major"], [0, 4, 7], "Major" ],
             [ ["m", "-", "min", "minor"], [0, 3, 7], "Minor" ],
             [ ["7"], [0, 4, 7, 10], "Dominant Seventh" ],
-            [ ["min7", "m7", "minor7"], [0, 3, 7, 10], "Minor Seventh"],
+            [ ["min7", "m7", "-7", "minor7"], [0, 3, 7, 10], "Minor Seventh"],
             [ ["maj7", "t", "Major7"], [0, 4, 7, 11], "Major Seventh"],
             [ ["sus4", "sus"], [0, 5, 7], "Suspended Fourth"],
             [ ["7sus4", "7sus"], [0, 5, 7, 10], "Seventh Suspended Fourth"],
