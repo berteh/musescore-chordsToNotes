@@ -11,6 +11,10 @@ No styles, variations, bells or whistles: it's really plain, but does work.
 
 ## How-To
 
+- Check out if you rather use [improved version](https://github.com/berteh/musescore-chordsToNotes/issues/9#issue-368060822) by @Bacchushlg, with
+> * automatic creation of a new staff line (only one initial staff is accepted in the moment)
+> * correct chord length according to the distance to the next chord symbol
+> * some additional chords and synonyms (as found in several scores that I tested)
 - [Download](https://github.com/berteh/musescore-chordsToNotes/archive/master.zip) and [install the plugin](https://musescore.org/en/handbook/plugins-0#installation) to your MuseScore 2.0+ install. Only the [qml file]([https://github.com/berteh/musescore-chordsToNotes/raw/master/chordsToNotes.qml) is needed, but the examples (in [test/](https://github.com/berteh/musescore-chordsToNotes/tree/master/test)) are useful to try it out quickly.
 - enable the chordsToNotes plugin in ``plugins > plugin manager`` dialog, restart MuseScore.
 - open a score with chords, make sure MuseScore has parsed them all by hitting F2 (transpose to anything) and SHIFT-F2 (to transpose back)... or simply transpose to a prime (or just to the current key) - so nothing is really changed
