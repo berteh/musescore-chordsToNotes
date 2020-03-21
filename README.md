@@ -1,4 +1,4 @@
-# musescore-chordsToNotes
+# musescore-chordsToNotes   [archived]
 
 The [harmony playback feature is now available in MuseScore 3](https://github.com/musescore/MuseScore/pull/5129#issuecomment-601717806), development of this plugin is thus stopped, thanks for you feedback and positive comments in the past.
 
