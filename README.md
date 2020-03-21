@@ -4,6 +4,8 @@ The [harmony playback feature is now available in MuseScore 3](https://github.co
 
 A much better alternative for MuseScore 2 is available at https://github.com/per-d/notesFromChordTexts
 
+Another approach, more in the idea of Band-In-A-Box, is being developed (for MuseScore 3) at https://github.com/berteh/BandInMuseScore
+
 # ARCHIVE
 
 This plugin for [MuseScore 2.0](http://musescore.org/) expands chords annotations into a few notes in voice 4, directly playable by MuseScore.
