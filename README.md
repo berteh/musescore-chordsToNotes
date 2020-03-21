@@ -1,10 +1,13 @@
 # musescore-chordsToNotes
 
+The [harmony playback feature is now available in MuseScore 3](https://github.com/musescore/MuseScore/pull/5129#issuecomment-601717806), development of this plugin is thus stopped, thanks for you feedback and positive comments in the past.
+
+
+# ARCHIVE
+
 This plugin for [MuseScore 2.0](http://musescore.org/) expands chords annotations into a few notes in voice 4, directly playable by MuseScore.
 
 No styles, variations, bells or whistles: it's really plain, but does work.
-
-This plugin is likely to be ported into MuseScore core in the near future... no further plugin development for now.
 
 ## How-To
 
