@@ -2,7 +2,7 @@
 
 The [harmony playback feature is now available in MuseScore 3](https://github.com/musescore/MuseScore/pull/5129#issuecomment-601717806), development of this plugin is thus stopped, thanks for you feedback and positive comments in the past.
 
-A better looking alternative for MuseScore 2 is https://musescore.org/en/project/notes-chord-texts
+A much better alternative for MuseScore 2 is available at https://github.com/per-d/notesFromChordTexts
 
 # ARCHIVE
 
